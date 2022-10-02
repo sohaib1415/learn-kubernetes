@@ -1,13 +1,42 @@
 # Kubernetes
 
-- [Kubernetes cheatsheet](#kubernetes-cheatsheet)
+---
+
+- [Kubernetes](#kubernetes)
   - [History](#history)
-  - [Online platform for K8s](#online-plateforms)
-  - [Cloud based K8s services](#cloud-based-services-plateforms)
-  - [Features of K8s](#features)
-  - [Cluster Architecture](cluster-architecture/cluster-architecture.md)
-  - [POD](workloads/pods.md)
-  
+    - [Online platform for K8s](#online-platform-for-k8s)
+    - [Cloud based K8s services](#cloud-based-k8s-services)
+    - [K8s installation tools](#k8s-installation-tools)
+    - [Problems with out a container management tools](#problems-with-out-a-container-management-tools)
+  - [Features of K8s](#features-of-k8s)
+  - [Higher level k8s objects](#higher-level-k8s-objects)
+    - [Setup Kubernetes on AWS](#setup-kubernetes-on-aws)
+      - [Common commands for master and worker nodes](#common-commands-for-master-and-worker-nodes)
+      - [BOOTSTRAPPING THE MASTER NODE (IN MASTER)](#bootstrapping-the-master-node-in-master)
+      - [CONFIGURE WORKER NODES (IN NODES)](#configure-worker-nodes-in-nodes)
+        - [GO TO MASTER AND RUN THIS COMMAND](#go-to-master-and-run-this-command)
+    - [Install Minikube on AWS](#install-minikube-on-aws)
+  - [Kubernetes Objects](#kubernetes-objects)
+    - [Labels and selectors](#labels-and-selectors)
+    - [Replication Controller](#replication-controller)
+    - [Replica Set](#replica-set)
+    - [Deployment](#deployment)
+    - [Services](#services)
+    - [Volume](#volume)
+    - [Configurations](#configurations)
+    - [Namespace](#namespace)
+    - [Resource Quota](#resource-quota)
+    - [Job](#job)
+    - [HELM](#helm)
+    - [Scheduling](#scheduling)
+    - [Understand the role of DaemonSets](#understand-the-role-of-daemonsets)
+    - [K8s Logging and Monitoring](#k8s-logging-and-monitoring)
+      - [Monitor Cluster Component](#monitor-cluster-component)
+      - [Monitor Applications](#monitor-applications)
+      - [Cluster component logs](#cluster-component-logs)
+      - [Application Logs](#application-logs)
+
+---
 
 - Open-source container management tool which automates container deployment, container scaling and load balancing
 - It schedules, run and manages isolated container which are running in virtual, physical and cloud machines
@@ -107,7 +136,7 @@ kubectl get node -o wide # check the ip of node for nodePort service type config
 
 ```
 
-### Lab
+### Setup Kubernetes on AWS
 
 #### Common commands for master and worker nodes
 
@@ -176,7 +205,9 @@ e.g- kubeadm join 172.31.6.165:6443 --token kl9fhu.co2n90v3rxtqllrs --discovery-
 kubectl get nodes
 ```
 
-## Kubernetes Objects
+
+
+### Install Minikube on AWS
 
 ```yml
 
@@ -262,69 +293,34 @@ spec:
        - containerPort: 80  
 ```
 
+## Kubernetes Objects
+
 ### Labels and selectors
 
 - Labels are the mechanism you use to organize k8s objects
 - Label is a key-value pair without any pre-defined meaning that can be attached to the objects
 - Label are similar to tags in AWS or git where you use a name to quick refrence
 - Multiple label can be added to a single object
-
-### Deployment
-
-- Deployment talks to pod via replicaSet not directly to pods
-- Deployment object act as a supervisor for pods, giving you fine-grained control over how and when a new pod is rolled out, updated and roll back to a previous state
-
-#### Use cases for Deployments
-
-- __Create a deployment to rollout a replicaSet__
-- __Declare the new state of pod__ by updating the PodTemplateSpec of the deployment
-- __Rollback to an earlier deployment revision__
-- __Scale up/down__
-- __Pause/resume the deployment to apply multiple fixes__
   
-If there are problem in deployment k8 will automatically rollback to previous version, however you can also rollback to specific version using --to-revision
-e.g kubectl rollout undo deploy/mydeployment --to-revision=2
+### [Replication Controller](workloads/workload-resources/replication-controller.md)
 
-> The name of the replicaSet is always formatted as [DeploymentName-Random String]
+### [Replica Set](workloads/workload-resources/replicaset.md)
 
-```yaml
-kubctl create deploy webapp1 --image=nginx:1.16-alpine-perl --dry-run -o yaml > webapp1.yaml
-cat webapp1.yaml
-kubectl create -f webapp1.yaml
-kubectl get deploy -o=wide
-kubectl describe deploy/mydeployment # step wise how deployment create replicaSets and pods
-kubectl logs -f <pod> # check what is running inside container
-kubectl exec <pod> -- cat /etc/os-release
-```
+### [Deployment](workloads/workload-resources/deployment.md)
 
-#### Scaling Up Deployments
+### [Services](services,load-balancing-and-networking/Services,Load-Balancing-and-Networking.md)
 
-```yaml
-kubectl scale --replicas=30 deploy webapp1
-```
+### [Volume](storage/storage.md)
 
-#### Perform Rollout and Rollbacks
+### [Configurations](configuraitons/configMaps-and-secrets.md)
 
-- In case of Rollback no. of pods remains same e.g v1 contains 2 pods and v2 contains 3 pods then after rollback from v2 to v1 no. of pods remains 3  
+### [Namespace](working-with-kubernetes-objects/namespaces.md)
 
-```yaml
-cp webapp1.yaml webapp2.yaml
-nano webapp2.yaml # update docker image version from nginx:1.16-alpine-perl to nginx:1.17-alpine-perl
-kubectl create -f webapp2.yaml # output: deployment.apps/webapp1 configured means it roll out from nginx:1.16-alpine-perl to nginx:1.17-alpine-perl
-kubectl rollout status deploy webapp1 # deployment "webapp1" successfully rolled out
-kubectl rollout history deploy webapp1 
+### [Resource Quota](policies/resource-quotas.md)
 
-kubectl rollout undo deploy webapp1 # output: deployment.apps/webapp1 rolled out
-kubectl rollout undo deploy/webapp1 --to-revision=2 # go to specific revision
-```
+### [Job](workloads/workload-resources/job.md)
 
-> create service via command of already created deployment kubectl expose deploy webapp1 --port=80
-
-[Working in Kubernetes Objects](working-with-kubernetes-objects/storage.md)
-[Workloads](workloads/storage.md)
-[Services, Load Balancing, and Networking](Services,Load-Balancing-and-Networking.md)
-[Storages](storage/storage.md)
-[Configurations](configuraitons/configMaps-and-secrets.md)
+### [HELM](helm.md)
 
 ### Scheduling
 
@@ -341,7 +337,7 @@ kubectl get pods -o=wide
 
 ```
 
-### Understand the role od DaemonSets
+### Understand the role of DaemonSets
 
 - DaemonSets are simply a way to run a single pod on each and every node in the cluster
 
@@ -380,6 +376,3 @@ kubectl top node --sort-by=memory
 
 #### Application Logs
 
-```yaml
-kubectl logs
-```

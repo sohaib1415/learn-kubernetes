@@ -31,3 +31,5 @@ k8s networking addresses four concerns:
 - __NodePort__ make a service accessible from outside the cluster; exposes the service on same port of each selected node in the cluster using NAT 
 - __Load Balancer__ Load balancer created by cloud providers that will route external traffic to every node on the nodePort.eg ELB on AWS
 - __Headless__ Create several endpoints that are used to produce DNS records. Each DNS record is bound to a pod
+
+> create service via command of already created deployment kubectl expose deploy webapp1 --port=80
